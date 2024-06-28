@@ -1,0 +1,65 @@
+pipeline {
+    agent any 
+
+    stages { 
+        stage('Github Checkout') {
+            steps {
+                retry(3) {
+                    git branch: 'master', url: 'https://github.com/Nifras365/online-recruitment-website'
+                }
+            }
+        }
+        stage('Build Backend Docker Image') {
+            steps {  
+                dir('Backend') {
+                    bat 'docker build -t nifras365/orpbackend:%BUILD_NUMBER% .'
+                }
+            }
+        }
+        stage('Build Frontend Docker Image') {
+            steps {
+                dir('Frontend') {
+                    bat 'docker build -t nifras365/orpfrontend:%BUILD_NUMBER% .'
+                }
+            }
+        }
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'dockerhub')]) {
+                    script {
+                        bat "docker login -u nifras365 -p %dockerhub%"
+                    }
+                }
+            }
+        }
+        stage('Push Backend Image') {
+            steps {
+                bat 'docker push nifras365/orpbackend:%BUILD_NUMBER%'
+            }
+        }
+        stage('Push Frontend Image') {
+            steps {
+                bat 'docker push nifras365/orpfrontend:%BUILD_NUMBER%'
+            }
+        }
+        stage('Deploy Containers') {
+            steps {
+                script {
+                    //bat 'docker-compose down || true'
+                    
+                    bat 'docker-compose pull'
+                    
+                    bat 'docker-compose up -d'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                sleep time: 2, unit: 'MINUTES'
+                bat 'docker logout'
+            }
+        }
+    }
+}
