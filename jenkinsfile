@@ -5,21 +5,21 @@ pipeline {
         stage('Github Checkout') {
             steps {
                 retry(3) {
-                    git branch: 'master', url: 'https://github.com/Nifras365/online-recruitment-website'
+                    git branch: 'master', url: 'https://github.com/AhamedMinhaj456/online-recruitment-website'
                 }
             }
         }
         stage('Build Backend Docker Image') {
             steps {  
                 dir('Backend') {
-                    bat 'docker build -t nifras365/orpbackend:%BUILD_NUMBER% .'
+                    bat 'docker build -t AhamedMinhaj456/mrssbackend:%BUILD_NUMBER% .'
                 }
             }
         }
         stage('Build Frontend Docker Image') {
             steps {
                 dir('Frontend') {
-                    bat 'docker build -t nifras365/orpfrontend:%BUILD_NUMBER% .'
+                    bat 'docker build -t AhamedMinhaj456/mrssfrontend:%BUILD_NUMBER% .'
                 }
             }
         }
@@ -27,19 +27,19 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'dockerhub')]) {
                     script {
-                        bat "docker login -u nifras365 -p %dockerhub%"
+                        bat "docker login -u AhamedMinhaj456 -p %dockerhub%"
                     }
                 }
             }
         }
         stage('Push Backend Image') {
             steps {
-                bat 'docker push nifras365/orpbackend:%BUILD_NUMBER%'
+                bat 'docker push AhamedMinhaj456/mrssbackend:%BUILD_NUMBER%'
             }
         }
         stage('Push Frontend Image') {
             steps {
-                bat 'docker push nifras365/orpfrontend:%BUILD_NUMBER%'
+                bat 'docker push AhamedMinhaj456/mrssfrontend:%BUILD_NUMBER%'
             }
         }
         stage('Deploy Containers') {
